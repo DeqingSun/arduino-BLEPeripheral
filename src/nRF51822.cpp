@@ -672,8 +672,8 @@ void nRF51822::poll() {
           gapSecParams.timeout          = 30; // must be 30s
 #endif
           gapSecParams.bond             = true;
-          gapSecParams.mitm             = false;
-          gapSecParams.io_caps          = BLE_GAP_IO_CAPS_NONE;
+          gapSecParams.mitm             = this->_mitm;
+          gapSecParams.io_caps          = this->_io_caps;
           gapSecParams.oob              = false;
           gapSecParams.min_key_size     = 7;
           gapSecParams.max_key_size     = 16;
@@ -934,8 +934,8 @@ void nRF51822::poll() {
           gapSecParams.timeout          = 30; // must be 30s
 #endif
           gapSecParams.bond             = true;
-          gapSecParams.mitm             = false;
-          gapSecParams.io_caps          = BLE_GAP_IO_CAPS_NONE;
+          gapSecParams.mitm             = this->_mitm;
+          gapSecParams.io_caps          = this->_io_caps;
           gapSecParams.oob              = false;
           gapSecParams.min_key_size     = 7;
           gapSecParams.max_key_size     = 16;
@@ -978,8 +978,8 @@ void nRF51822::poll() {
           gapSecParams.timeout          = 30; // must be 30s
 #endif
           gapSecParams.bond             = true;
-          gapSecParams.mitm             = false;
-          gapSecParams.io_caps          = BLE_GAP_IO_CAPS_NONE;
+          gapSecParams.mitm             = this->_mitm;
+          gapSecParams.io_caps          = this->_io_caps;
           gapSecParams.oob              = false;
           gapSecParams.min_key_size     = 7;
           gapSecParams.max_key_size     = 16;

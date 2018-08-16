@@ -44,15 +44,32 @@
   #define BLE_DEFAULT_RST   9
 #endif
 
-
 enum BLEPeripheralEvent {
   BLEConnected = 0,
   BLEDisconnected = 1,
   BLEBonded = 2,
-  BLERemoteServicesDiscovered = 3
+  BLERemoteServicesDiscovered = 3,
+  BLEPasskeyReceived = 4,
+  BLEPasskeyRequested = 5,
+  BLEScanReceived = 6,
+  BLEMessage = 7
+};
+
+enum BLEBondingType {
+  JUST_WORKS = 0,
+  DISPLAY_PASSKEY = 1,
+  CONFIRM_PASSKEY = 2
+};
+
+enum BLEStatus {
+	CONNECT = 0,
+	DISCONNECT,
+	ADVERTISING,
+	SCANNING
 };
 
 typedef void (*BLEPeripheralEventHandler)(BLECentral& central);
+typedef void (*BLEMessageEventHandler)(int eventNo, int messageCode);
 
 
 class BLEPeripheral : public BLEDeviceEventListener,
@@ -79,6 +96,10 @@ class BLEPeripheral : public BLEDeviceEventListener,
     bool setTxPower(int txPower);
     void setConnectable(bool connectable);
     void setBondStore(BLEBondStore& bondStore);
+    void enableBond(BLEBondingType type = JUST_WORKS);
+    char *getPasskey();
+    void sendPasskey(char passkey[]);
+    void confirmPasskey(bool confirm);
 
 
     void setDeviceName(const char* deviceName);
@@ -94,6 +115,7 @@ class BLEPeripheral : public BLEDeviceEventListener,
     bool connected();
 
     void setEventHandler(BLEPeripheralEvent event, BLEPeripheralEventHandler eventHandler);
+    void setEventHandler(BLEPeripheralEvent event, BLEMessageEventHandler eventHandler);
 
   protected:
     bool characteristicValueChanged(BLECharacteristic& characteristic);
@@ -114,6 +136,9 @@ class BLEPeripheral : public BLEDeviceEventListener,
     virtual void BLEDeviceDisconnected(BLEDevice& device);
     virtual void BLEDeviceBonded(BLEDevice& device);
     virtual void BLEDeviceRemoteServicesDiscovered(BLEDevice& device);
+    virtual void BLEDevicePasskeyReceived(BLEDevice& device);
+    virtual void BLEDevicePasskeyRequested(BLEDevice& device);
+    virtual void BLEMessageReceived(BLEDevice& device, int eventCode, int messageCode);
 
     virtual void BLEDeviceCharacteristicValueChanged(BLEDevice& device, BLECharacteristic& characteristic, const unsigned char* value, unsigned char valueLength);
     virtual void BLEDeviceCharacteristicSubscribedChanged(BLEDevice& device, BLECharacteristic& characteristic, bool subscribed);
@@ -157,7 +182,8 @@ class BLEPeripheral : public BLEDeviceEventListener,
     BLERemoteCharacteristic        _remoteServicesChangedCharacteristic;
 
     BLECentral                     _central;
-    BLEPeripheralEventHandler      _eventHandlers[4];
+    BLEPeripheralEventHandler      _eventHandlers[6];
+    BLEMessageEventHandler         _messageEventHandler;
 };
 
 #endif

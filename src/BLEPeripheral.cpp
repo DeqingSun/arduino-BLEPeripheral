@@ -25,6 +25,8 @@ BLEPeripheral::BLEPeripheral(unsigned char req, unsigned char rdy, unsigned char
   _manufacturerData(NULL),
   _manufacturerDataLength(0),
   _localName(NULL),
+  
+  _messageEventHandler(NULL),
 
   _localAttributes(NULL),
   _numLocalAttributes(0),
@@ -203,6 +205,38 @@ void BLEPeripheral::setBondStore(BLEBondStore& bondStore) {
   this->_device->setBondStore(bondStore);
 }
 
+void BLEPeripheral::enableBond(BLEBondingType type){
+  switch(type){
+    case DISPLAY_PASSKEY:
+      this->_device->_mitm = true;
+      this->_device->_io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+      //setSecParams(1, 1, 0, BLE_GAP_IO_CAPS_DISPLAY_ONLY);
+    break;
+    case CONFIRM_PASSKEY:
+      this->_device->_mitm = true;
+      this->_device->_io_caps = BLE_GAP_IO_CAPS_KEYBOARD_ONLY;
+      //setSecParams(1, 1, 0, BLE_GAP_IO_CAPS_KEYBOARD_ONLY);
+    break;
+    default:
+
+    break;
+  }
+	
+}
+
+char * BLEPeripheral::getPasskey(){
+  if(this->_device->_passkey[0] != 0)
+    return (char *)this->_device->_passkey;
+}
+
+void BLEPeripheral::sendPasskey(char passkey[]){
+  this->_device->sendPasskey(passkey);
+}
+
+void BLEPeripheral::confirmPasskey(bool confirm){
+  this->_device->confirmPasskey(confirm);
+}
+
 void BLEPeripheral::setDeviceName(const char* deviceName) {
   this->_deviceNameCharacteristic.setValue(deviceName);
 }
@@ -261,6 +295,12 @@ void BLEPeripheral::setEventHandler(BLEPeripheralEvent event, BLEPeripheralEvent
   if (event < sizeof(this->_eventHandlers)) {
     this->_eventHandlers[event] = eventHandler;
   }
+}
+
+void BLEPeripheral::setEventHandler(BLEPeripheralEvent event, BLEMessageEventHandler eventHandler){
+  // only allow BLEMessage event to have a different kind of handler function
+  if(event == BLEMessage)
+    this->_messageEventHandler = eventHandler;
 }
 
 bool BLEPeripheral::characteristicValueChanged(BLECharacteristic& characteristic) {
@@ -361,6 +401,25 @@ void BLEPeripheral::BLEDeviceRemoteServicesDiscovered(BLEDevice& /*device*/) {
   if (eventHandler) {
     eventHandler(this->_central);
   }
+}
+
+void BLEPeripheral::BLEDevicePasskeyReceived(BLEDevice& /*device*/){
+  BLEPeripheralEventHandler eventHandler = this->_eventHandlers[BLEPasskeyReceived];
+  if (eventHandler) {
+    eventHandler(this->_central);
+  }
+}
+
+void BLEPeripheral::BLEDevicePasskeyRequested(BLEDevice& /*device*/){
+  BLEPeripheralEventHandler eventHandler = this->_eventHandlers[BLEPasskeyRequested];
+  if (eventHandler) {
+    eventHandler(this->_central);
+  }
+}
+
+void BLEPeripheral::BLEMessageReceived(BLEDevice& /*device*/, int eventCode, int messageCode){
+  if(this->_messageEventHandler != NULL)
+    _messageEventHandler(eventCode, messageCode);
 }
 
 void BLEPeripheral::BLEDeviceCharacteristicValueChanged(BLEDevice& /*device*/, BLECharacteristic& characteristic, const unsigned char* value, unsigned char valueLength) {

@@ -4,6 +4,27 @@
 #ifndef _BLE_DEVICE_H_
 #define _BLE_DEVICE_H_
 
+#if defined(__RFduino__)
+  #include <utility/RFduino/ble_gatts.h>
+  #include <utility/RFduino/ble_gattc.h>
+#elif defined(NRF5) || defined(NRF51_S130)
+  #include <ble_gatts.h>
+  #include <ble_gattc.h>
+  #include <nrf_soc.h>
+#elif defined(NRF52) && defined(S132) // ARDUINO_RBL_nRF52832
+  #ifndef ARDUINO_RBL_nRF52832
+    #define ARDUINO_RBL_nRF52832
+  #endif
+  #define NRF5
+
+  #include <sdk/softdevice/s132/headers/nrf_ble_gatts.h>
+  #include <sdk/softdevice/s132/headers/nrf_ble_gattc.h>
+  #include <sdk/softdevice/s132/headers/nrf_soc.h>
+#else
+  #include <s110/ble_gatts.h>
+  #include <s110/ble_gattc.h>
+#endif
+
 #include "BLEBondStore.h"
 #include "BLECharacteristic.h"
 #include "BLELocalAttribute.h"
@@ -27,6 +48,8 @@ class BLEDeviceEventListener
     virtual void BLEDeviceDisconnected(BLEDevice& /*device*/) { }
     virtual void BLEDeviceBonded(BLEDevice& /*device*/) { }
     virtual void BLEDeviceRemoteServicesDiscovered(BLEDevice& /*device*/) { }
+    virtual void BLEDevicePasskeyReceived(BLEDevice& /*device*/) {}
+    virtual void BLEDevicePasskeyRequested(BLEDevice& /*device*/) {}
 
     virtual void BLEDeviceCharacteristicValueChanged(BLEDevice& /*device*/, BLECharacteristic& /*characteristic*/, const unsigned char* /*value*/, unsigned char /*valueLength*/) { }
     virtual void BLEDeviceCharacteristicSubscribedChanged(BLEDevice& /*device*/, BLECharacteristic& /*characteristic*/, bool /*subscribed*/) { }
@@ -55,6 +78,8 @@ class BLEDevice
     void setConnectionInterval(unsigned short minimumConnectionInterval, unsigned short maximumConnectionInterval);
     void setConnectable(bool connectable);
     void setBondStore(BLEBondStore& bondStore);
+    void sendPasskey(char passkey[]);
+    void confirmPasskey(bool confirm);
 
     virtual void begin(unsigned char /*advertisementDataSize*/,
                 BLEEirData * /*advertisementData*/,
@@ -93,10 +118,15 @@ class BLEDevice
     virtual void requestBatteryLevel() { }
 
   protected:
+    uint16_t                      _connectionHandle;
     unsigned short                _advertisingInterval;
     unsigned short                _minimumConnectionInterval;
     unsigned short                _maximumConnectionInterval;
     bool                          _connectable;
+    bool                          _mitm;
+    uint8_t                       _io_caps;
+    uint8_t                       _passkey[6];
+    bool                          _userConfirm;
     BLEBondStore*                 _bondStore;
     BLEDeviceEventListener*       _eventListener;
 };
