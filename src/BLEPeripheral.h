@@ -99,6 +99,7 @@ class BLEPeripheral : public BLEDeviceEventListener,
     void enableBond(BLEBondingType type = JUST_WORKS);
     char *getPasskey();
     void sendPasskey(char passkey[]);
+    void setStaticPasskey(char passkey[]);
     void confirmPasskey(bool confirm);
 
 

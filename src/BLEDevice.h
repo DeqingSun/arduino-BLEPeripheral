@@ -80,6 +80,8 @@ class BLEDevice
     void setBondStore(BLEBondStore& bondStore);
     void sendPasskey(char passkey[]);
     void confirmPasskey(bool confirm);
+    void setStaticKeysOpt(char* key);
+    
 
     virtual void begin(unsigned char /*advertisementDataSize*/,
                 BLEEirData * /*advertisementData*/,

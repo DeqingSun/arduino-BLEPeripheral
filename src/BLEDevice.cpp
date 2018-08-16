@@ -5,6 +5,8 @@
 
 #include "BLEDevice.h"
 
+#include <ble.h>
+
 #define DEFAULT_ADVERTISING_INTERVAL 100
 #define DEFAULT_CONNECTABLE          true
 
@@ -24,6 +26,7 @@ BLEDevice::BLEDevice() :
 }
 
 BLEDevice::~BLEDevice() {
+   
 }
 
 void BLEDevice::setEventListener(BLEDeviceEventListener* eventListener) {
@@ -57,4 +60,10 @@ void BLEDevice::sendPasskey(char passkey[]){
 
 void BLEDevice::confirmPasskey(bool confirm){
   this->_userConfirm = confirm;
+}
+
+void BLEDevice::setStaticKeysOpt(char* key){
+  static ble_opt_t  m_static_pin_option;
+  m_static_pin_option.gap_opt.passkey.p_passkey = (uint8_t*) key;
+  int err_code =  sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &m_static_pin_option);
 }

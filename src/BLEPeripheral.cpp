@@ -233,6 +233,10 @@ void BLEPeripheral::sendPasskey(char passkey[]){
   this->_device->sendPasskey(passkey);
 }
 
+void BLEPeripheral::setStaticPasskey(char passkey[]){
+  this->_device->setStaticKeysOpt(passkey); 
+}
+
 void BLEPeripheral::confirmPasskey(bool confirm){
   this->_device->confirmPasskey(confirm);
 }
